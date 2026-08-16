@@ -5,7 +5,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Wallet {
     private long amount;
-    public int id;
+    private final int id;
     private final Lock lock;
     Wallet(int id) {
         amount = 0;
@@ -13,42 +13,57 @@ public class Wallet {
         lock = new ReentrantLock();
     }
 
-    void depositAmount(long sum) {
-        try {
-            lock.lock();
+    public int getId() {
+        return id;
+    }
 
-            if (sum < 0) {
-                throw new IllegalArgumentException("Cannot deposit negative sum");
+    public void lockAccount() {
+        lock.lock();
+    }
+
+    public void unlockAccount() {
+        lock.unlock();
+    }
+
+    void deposit(long amount) {
+        try {
+            lockAccount();
+
+            if (amount < 0) {
+                throw new IllegalArgumentException("Cannot deposit negative amount");
             }
-            amount += sum;
+            this.amount += amount;
         }
         finally {
-            lock.unlock();
+            unlockAccount();
         }
     }
 
-    void withdrawAmount(long sum) {
+    void withdraw(long amount) {
         try {
-            lock.lock();
-            if (sum < 0) {
+            lockAccount();
+            if (amount < 0) {
                 throw new IllegalArgumentException("Cannot withdraw negative funds");
             }
-            if (amount >= sum) {
-                amount -= sum;
+            if (this.amount >= amount) {
+                this.amount -= amount;
             } else {
-                throw new InsufficientClassException("Insufficient funds");
+                throw new InsufficientFundsException("Insufficient funds");
             }
         }
         finally {
-            lock.unlock();
+            unlockAccount();
         }
     }
 
-    public float getAmount() {
+    public long getBalance() {
         long currentAmount;
-        lock.lock();
-        currentAmount = amount;
-        lock.unlock();
+        lockAccount();
+        try {
+            currentAmount = amount;
+        } finally {
+            unlockAccount();
+        }
 
         return  currentAmount;
     }
