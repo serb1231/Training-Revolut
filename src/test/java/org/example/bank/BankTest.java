@@ -125,6 +125,7 @@ class BankTest {
         assertEquals(2000, bank.getAccount(1).getBalance() + bank.getAccount(2).getBalance());
     }
 
+    @Test
     public void transfer_SameAccount_ThrowsException() {
         assertThatThrownBy(() -> bank.transfer(1, 1, 10)).isInstanceOf(SelfTransferException.class);
 
